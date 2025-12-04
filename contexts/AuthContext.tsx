@@ -9,6 +9,8 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, full_name: string) => Promise<AuthResponse>;
   signIn: (email: string, password: string) => Promise<AuthResponse>;
+  requestMagicLink: (email: string) => Promise<{ message: string; isNewUser: boolean }>;
+  verifyMagicLink: (token: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -30,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Handle OAuth callback
+    // handle OAuth callback
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const authSuccess = urlParams.get('auth') === 'success';
@@ -38,8 +40,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (authSuccess && token) {
         localStorage.setItem('authToken', token);
+        // clean URL before redirect
         window.history.replaceState({}, document.title, window.location.pathname);
-        checkAuth();
+        // fetch user data then redirect
+        checkAuth().then(() => {
+          window.location.href = '/dashboard';
+        });
       } else {
         checkAuth();
       }
@@ -70,8 +76,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const requestMagicLink = useCallback(async (email: string) => {
+    return await api.requestMagicLink(email);
+  }, []);
+
+  const verifyMagicLink = useCallback(async (token: string) => {
+    const data = await api.verifyMagicLink(token);
+    if (data.token) {
+      localStorage.setItem('authToken', data.token);
+    }
+    setUser(data.user);
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, signUp, signIn, logout }}>
+    <AuthContext.Provider value={{ user, loading, signUp, signIn, requestMagicLink, verifyMagicLink, logout }}>
       {children}
     </AuthContext.Provider>
   );

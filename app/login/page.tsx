@@ -1,48 +1,53 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Eye, EyeOff } from 'lucide-react';
-import { z } from 'zod';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
+import { z } from "zod";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Validation schemas
 const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(1, 'Password is required'),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
 });
 
-const signupSchema = z.object({
-  fullName: z
-    .string()
-    .min(2, 'Full name must be at least 2 characters')
-    .max(50, 'Full name must be less than 50 characters')
-    .regex(/^[a-zA-Z\s]+$/, 'Full name can only contain letters and spaces'),
-  email: z.string().email('Please enter a valid email address'),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number')
-    .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
-  confirmPassword: z.string().min(1, 'Please confirm your password'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-});
+const signupSchema = z
+  .object({
+    fullName: z
+      .string()
+      .min(2, "Full name must be at least 2 characters")
+      .max(50, "Full name must be less than 50 characters")
+      .regex(/^[a-zA-Z\s]+$/, "Full name can only contain letters and spaces"),
+    email: z.string().email("Please enter a valid email address"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+      .regex(/[0-9]/, "Password must contain at least one number")
+      .regex(
+        /[^A-Za-z0-9]/,
+        "Password must contain at least one special character"
+      ),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 type SignupFormData = z.infer<typeof signupSchema>;
 
 export default function LoginPage() {
   const [isSignup, setIsSignup] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [apiError, setApiError] = useState('');
+  const [apiError, setApiError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -51,12 +56,11 @@ export default function LoginPage() {
   const router = useRouter();
 
   const handleGoogleLogin = () => {
-    // Redirect to backend OAuth endpoint
+    // redirect to backend OAuth endpoint
     window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google`;
   };
 
   const handleFacebookLogin = () => {
-    // Redirect to backend OAuth endpoint
     window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/facebook`;
   };
 
@@ -72,9 +76,9 @@ export default function LoginPage() {
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
-        error.errors.forEach((err) => {
-          if (err.path[0]) {
-            fieldErrors[err.path[0].toString()] = err.message;
+        error.issues.forEach((issue) => {
+          if (issue.path && issue.path[0]) {
+            fieldErrors[issue.path[0].toString()] = issue.message;
           }
         });
         setErrors(fieldErrors);
@@ -85,7 +89,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setApiError('');
+    setApiError("");
 
     if (!validateForm()) {
       return;
@@ -99,10 +103,12 @@ export default function LoginPage() {
       } else {
         await signIn(email, password);
       }
-      router.push('/dashboard');
+      router.push("/dashboard");
     } catch (err) {
       const error = err as { response?: { message?: string } };
-      setApiError(error.response?.message || 'Authentication failed. Please try again.');
+      setApiError(
+        error.response?.message || "Authentication failed. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -111,11 +117,11 @@ export default function LoginPage() {
   const handleModeToggle = () => {
     setIsSignup(!isSignup);
     setErrors({});
-    setApiError('');
-    setEmail('');
-    setPassword('');
-    setConfirmPassword('');
-    setFullName('');
+    setApiError("");
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setFullName("");
   };
 
   return (
@@ -126,12 +132,244 @@ export default function LoginPage() {
             Local<span className="text-orange-500">Bite</span>
           </h1>
           <p className="text-gray-600">
-            {isSignup ? 'Create your account' : 'Welcome back!'}
+            {isSignup ? "Create your account" : "Welcome back!"}
           </p>
         </div>
 
         <div className="rounded-lg bg-white p-8 shadow-lg">
-          {/* OAuth Buttons */}
+          {/* Email/Password Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {isSignup && (
+              <div>
+                <label
+                  htmlFor="fullName"
+                  className="mb-1 block text-sm font-medium text-gray-700"
+                >
+                  Full Name
+                </label>
+                <input
+                  id="fullName"
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => {
+                    setFullName(e.target.value);
+                    if (errors.fullName) {
+                      const newErrors = { ...errors };
+                      delete newErrors.fullName;
+                      setErrors(newErrors);
+                    }
+                  }}
+                  className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 ${
+                    errors.fullName
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-200"
+                      : "border-gray-300 focus:border-orange-500 focus:ring-orange-200"
+                  }`}
+                  placeholder="John Doe"
+                />
+                {errors.fullName && (
+                  <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>
+                )}
+              </div>
+            )}
+
+            <div>
+              <label
+                htmlFor="email"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) {
+                    const newErrors = { ...errors };
+                    delete newErrors.email;
+                    setErrors(newErrors);
+                  }
+                }}
+                className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 ${
+                  errors.email
+                    ? "border-red-500 focus:border-red-500 focus:ring-red-200"
+                    : "border-gray-300 focus:border-orange-500 focus:ring-orange-200"
+                }`}
+                placeholder="you@example.com"
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="password"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errors.password) {
+                      const newErrors = { ...errors };
+                      delete newErrors.password;
+                      setErrors(newErrors);
+                    }
+                  }}
+                  className={`w-full rounded-lg border px-4 py-2 pr-10 focus:outline-none focus:ring-2 ${
+                    errors.password
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-200"
+                      : "border-gray-300 focus:border-orange-500 focus:ring-orange-200"
+                  }`}
+                  placeholder={isSignup ? "Min. 8 characters" : "••••••••"}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              )}
+            </div>
+
+            {isSignup && (
+              <div>
+                <label
+                  htmlFor="confirmPassword"
+                  className="mb-1 block text-sm font-medium text-gray-700"
+                >
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      if (errors.confirmPassword) {
+                        const newErrors = { ...errors };
+                        delete newErrors.confirmPassword;
+                        setErrors(newErrors);
+                      }
+                    }}
+                    className={`w-full rounded-lg border px-4 py-2 pr-10 focus:outline-none focus:ring-2 ${
+                      errors.confirmPassword
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-200"
+                        : "border-gray-300 focus:border-orange-500 focus:ring-orange-200"
+                    }`}
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                    aria-label={
+                      showConfirmPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.confirmPassword}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {apiError && (
+              <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+                {apiError}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-lg bg-orange-500 py-2.5 font-semibold text-white transition-colors hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Please wait...
+                </span>
+              ) : isSignup ? (
+                "Create Account"
+              ) : (
+                "Sign In"
+              )}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <button
+              onClick={handleModeToggle}
+              className="text-sm text-orange-500 hover:text-orange-600 focus:outline-none"
+            >
+              {isSignup
+                ? "Already have an account? Sign in"
+                : "Don't have an account? Sign up"}
+            </button>
+          </div>
+
+          <div className="mt-4 text-center">
+            <button
+              onClick={() => router.push('/magic-link')}
+              className="text-sm text-purple-600 hover:text-purple-700 focus:outline-none font-medium"
+            >
+              Sign in with Magic Link (no password needed)
+            </button>
+          </div>
+
+           <div className="relative mt-6 mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white px-2 text-gray-500">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+           {/* OAuth Buttons */}
           <div className="mb-6 space-y-3">
             <button
               type="button"
@@ -171,207 +409,9 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-2 text-gray-500">Or continue with email</span>
-            </div>
-          </div>
-
-          {/* Email/Password Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {isSignup && (
-              <div>
-                <label htmlFor="fullName" className="mb-1 block text-sm font-medium text-gray-700">
-                  Full Name
-                </label>
-                <input
-                  id="fullName"
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => {
-                    setFullName(e.target.value);
-                    if (errors.fullName) {
-                      const newErrors = { ...errors };
-                      delete newErrors.fullName;
-                      setErrors(newErrors);
-                    }
-                  }}
-                  className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 ${
-                    errors.fullName
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
-                      : 'border-gray-300 focus:border-orange-500 focus:ring-orange-200'
-                  }`}
-                  placeholder="John Doe"
-                />
-                {errors.fullName && (
-                  <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>
-                )}
-              </div>
-            )}
-
-            <div>
-              <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (errors.email) {
-                    const newErrors = { ...errors };
-                    delete newErrors.email;
-                    setErrors(newErrors);
-                  }
-                }}
-                className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 ${
-                  errors.email
-                    ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
-                    : 'border-gray-300 focus:border-orange-500 focus:ring-orange-200'
-                }`}
-                placeholder="you@example.com"
-              />
-              {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (errors.password) {
-                      const newErrors = { ...errors };
-                      delete newErrors.password;
-                      setErrors(newErrors);
-                    }
-                  }}
-                  className={`w-full rounded-lg border px-4 py-2 pr-10 focus:outline-none focus:ring-2 ${
-                    errors.password
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
-                      : 'border-gray-300 focus:border-orange-500 focus:ring-orange-200'
-                  }`}
-                  placeholder={isSignup ? 'Min. 8 characters' : '••••••••'}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-              {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
-            </div>
-
-            {isSignup && (
-              <div>
-                <label
-                  htmlFor="confirmPassword"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={(e) => {
-                      setConfirmPassword(e.target.value);
-                      if (errors.confirmPassword) {
-                        const newErrors = { ...errors };
-                        delete newErrors.confirmPassword;
-                        setErrors(newErrors);
-                      }
-                    }}
-                    className={`w-full rounded-lg border px-4 py-2 pr-10 focus:outline-none focus:ring-2 ${
-                      errors.confirmPassword
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-200'
-                        : 'border-gray-300 focus:border-orange-500 focus:ring-orange-200'
-                    }`}
-                    placeholder="••••••••"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
-                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
-                {errors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
-                )}
-              </div>
-            )}
-
-            {apiError && (
-              <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{apiError}</div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-lg bg-orange-500 py-2.5 font-semibold text-white transition-colors hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Please wait...
-                </span>
-              ) : isSignup ? (
-                'Create Account'
-              ) : (
-                'Sign In'
-              )}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <button
-              onClick={handleModeToggle}
-              className="text-sm text-orange-500 hover:text-orange-600 focus:outline-none"
-            >
-              {isSignup
-                ? 'Already have an account? Sign in'
-                : "Don't have an account? Sign up"}
-            </button>
-          </div>
-
           <div className="mt-4 text-center">
             <button
-              onClick={() => router.push('/')}
+              onClick={() => router.push("/")}
               className="text-sm text-gray-600 hover:text-gray-700 focus:outline-none"
             >
               ← Back to home
