@@ -1,4 +1,3 @@
-import '../assets/styles/footer.css';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
