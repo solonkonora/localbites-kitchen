@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppContext } from '@/contexts/AppContext';
 import Footer from '@/components/footer';
+import FeaturedRecipes from '@/components/FeaturedRecipes';
 
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
@@ -104,7 +105,7 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* Stats or Features */}
+              {/* stats or features */}
               <div className="grid grid-cols-3 gap-4 pt-8">
                 <div className="text-center lg:text-left">
                   <p className="text-2xl sm:text-3xl font-bold text-orange-400 lg:text-orange-600">
@@ -130,17 +131,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Recipes Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
-            Featured Recipes
-          </h2>
-          <p className="text-center text-gray-600 mb-8">
-            Featured recipes component will be added here
-          </p>
-        </div>
-      </section>
+      {/* featured recipes section */}
+      <FeaturedRecipes />
 
 
       {/* Categories Section */}
