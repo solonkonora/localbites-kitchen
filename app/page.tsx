@@ -6,7 +6,8 @@ import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppContext } from '@/contexts/AppContext';
 import Footer from '@/components/footer';
-import FeaturedRecipes from '@/components/FeaturedRecipes';
+import FeaturedRecipes from '@/components/featuredRecipes';
+import Categories from '@/components/categories';
 
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
@@ -131,21 +132,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* featured recipes section */}
       <FeaturedRecipes />
 
-
-      {/* Categories Section */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-900">
-            Browse by Category
-          </h2>
-          <p className="text-center text-gray-600 mb-8">
-            Categories component will be added here
-          </p>
-        </div>
-      </section>
+      <Categories />
 
       <Footer />
     </div>

@@ -241,7 +241,8 @@ export async function getCategories(): Promise<Category[]> {
 
 const api = { 
   getRecipes, 
-  getRecipe, 
+  getRecipe,
+  getRecipeById: getRecipe,
   createRecipe, 
   updateRecipe, 
   deleteRecipe,
@@ -259,10 +260,12 @@ const api = {
   removeFavorite,
   checkFavorite,
   getInstructions,
+  getInstructionsByRecipeId: getInstructions,
   createInstructions,
   updateInstruction,
   deleteInstruction,
   getIngredients,
+  getIngredientsByRecipeId: getIngredients,
   createIngredients,
   updateIngredient,
   deleteIngredient,
