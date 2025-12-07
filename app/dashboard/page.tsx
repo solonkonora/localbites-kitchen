@@ -3,8 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { Heart } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAppContext } from "@/contexts/AppContext";
+import Favorites from "@/components/Favorites";
+import apiClient from "@/lib/apiClient";
 
 type Tab = "home" | "favorites" | "add";
 
@@ -13,6 +17,74 @@ export default function DashboardPage() {
   const { recipes, fetchRecipes, fetchCategories } = useAppContext();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("home");
+  const queryClient = useQueryClient();
+
+  // Fetch user's favorites
+  const { data: favoritesData = [], refetch: refetchFavorites } = useQuery({
+    queryKey: ["favorites"],
+    queryFn: async () => {
+      try {
+        return await apiClient.getFavorites();
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
+        return [];
+      }
+    },
+    enabled: !!user,
+  });
+
+  // Get favorite recipe IDs for quick lookup
+  const favoriteRecipeIds = new Set(favoritesData.map((fav) => fav.recipe_id));
+
+  // Add favorite mutation
+  const addFavoriteMutation = useMutation({
+    mutationFn: (recipeId: number) => apiClient.addFavorite(recipeId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["favorites"] });
+      refetchFavorites();
+    },
+    onError: (error: Error & { status?: number }) => {
+      console.error("Error adding favorite:", error);
+      // If it's already favorited (409), just refetch to sync state
+      if (error.status === 409) {
+        console.log("Recipe already favorited, refreshing state...");
+        refetchFavorites();
+      } else {
+        alert("Failed to add favorite. Please try again.");
+      }
+    },
+  });
+
+  // Remove favorite mutation
+  const removeFavoriteMutation = useMutation({
+    mutationFn: (recipeId: number) => apiClient.removeFavorite(recipeId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["favorites"] });
+      refetchFavorites();
+    },
+    onError: (error: Error & { status?: number }) => {
+      console.error("Error removing favorite:", error);
+      // If it's not found (404), just refetch to sync state
+      if (error.status === 404) {
+        console.log("Favorite not found, refreshing state...");
+        refetchFavorites();
+      } else {
+        alert("Failed to remove favorite. Please try again.");
+      }
+    },
+  });
+
+  const toggleFavorite = async (recipeId: number) => {
+    console.log("Toggling favorite for recipe:", recipeId);
+    console.log("Current favorites:", favoritesData);
+    console.log("Is currently favorite:", favoriteRecipeIds.has(recipeId));
+    
+    if (favoriteRecipeIds.has(recipeId)) {
+      await removeFavoriteMutation.mutateAsync(recipeId);
+    } else {
+      await addFavoriteMutation.mutateAsync(recipeId);
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -116,38 +188,79 @@ export default function DashboardPage() {
               All Recipes
             </h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {recipes.map((recipe) => (
-                <div
-                  key={recipe.id}
-                  className="overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg"
-                >
-                  {recipe.image_path && (
-                    <div className="relative h-48 w-full">
-                      <Image
-                        src={recipe.image_path}
-                        alt={recipe.title}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      />
+              {recipes.map((recipe) => {
+                const isFavorite = favoriteRecipeIds.has(recipe.id);
+                
+                return (
+                  <div
+                    key={recipe.id}
+                    className="overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg relative"
+                  >
+                    {recipe.image_path && (
+                      <div className="relative h-64 w-full">
+                        <Image
+                          src={recipe.image_path}
+                          alt={recipe.title}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        />
+                        
+                        {/* Heart Icon on Image */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            toggleFavorite(recipe.id);
+                          }}
+                          disabled={
+                            addFavoriteMutation.isPending ||
+                            removeFavoriteMutation.isPending
+                          }
+                          className={`absolute top-4 right-4 p-3 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 z-50 border-2 ${
+                            isFavorite
+                              ? "bg-red-50 border-red-500 hover:bg-red-100"
+                              : "bg-white border-gray-300 hover:bg-gray-50"
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                          aria-label={
+                            isFavorite
+                              ? "Remove from favorites"
+                              : "Add to favorites"
+                          }
+                        >
+                          {(addFavoriteMutation.isPending ||
+                            removeFavoriteMutation.isPending) ? (
+                            <div className="h-5.5 w-5.5 animate-spin rounded-full border-2 border-orange-500 border-t-transparent"></div>
+                          ) : (
+                            <Heart
+                              size={24}
+                              className={
+                                isFavorite
+                                  ? "text-red-500 fill-red-500 drop-shadow-lg"
+                                  : "text-gray-500 hover:text-gray-700"
+                              }
+                            />
+                          )}
+                        </button>
+                      </div>
+                    )}
+                    <div className="p-4">
+                      <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                        {recipe.title}
+                      </h3>
+                      <p className="mb-4 text-sm text-gray-600 line-clamp-2">
+                        {recipe.description}
+                      </p>
+                      <button
+                        onClick={() => router.push(`/recipe/${recipe.id}`)}
+                        className="w-full rounded-lg bg-gradient-to-r from-orange-500 to-red-600 px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:shadow-lg hover:scale-105"
+                      >
+                        View Details
+                      </button>
                     </div>
-                  )}
-                  <div className="p-4">
-                    <h3 className="mb-2 text-lg font-semibold text-gray-900">
-                      {recipe.title}
-                    </h3>
-                    <p className="mb-4 text-sm text-gray-600 line-clamp-2">
-                      {recipe.description}
-                    </p>
-                    <button
-                      onClick={() => router.push(`/recipe/${recipe.id}`)}
-                      className="w-full rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:shadow-lg hover:scale-105"
-                    >
-                      View Details
-                    </button>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             {recipes.length === 0 && (
               <p className="text-center text-gray-600">
@@ -158,14 +271,7 @@ export default function DashboardPage() {
         )}
 
         {activeTab === "favorites" && (
-          <div>
-            <h2 className="mb-6 text-2xl font-bold text-gray-900">
-              Your Favorites
-            </h2>
-            <p className="text-gray-600">
-              Your favorite recipes will appear here.
-            </p>
-          </div>
+          <Favorites />
         )}
 
         {activeTab === "add" && (
