@@ -10,26 +10,6 @@ This is the modernized version of LocalBite, migrated from React (Vite) to **Nex
 - **Server Components** - Improved performance with React Server Components
 - **Type-safe API Client** - Fully typed API interactions
 
-## Project Structure
-
-```
-localbite-nextjs/
-├── app/                    # Next.js App Router pages
-│   ├── page.tsx           # Home/Welcome page
-│   ├── login/page.tsx     # Authentication page
-│   ├── dashboard/page.tsx # Main dashboard (authenticated)
-│   └── layout.tsx         # Root layout with providers
-├── components/            # Reusable React components
-├── contexts/              # React Context providers
-│   ├── AuthContext.tsx    # Authentication state
-│   └── AppContext.tsx     # Application state (recipes, categories)
-├── lib/                   # Utility functions
-│   └── apiClient.ts       # Type-safe API client
-├── types/                 # TypeScript type definitions
-│   └── index.ts           # Core types (User, Recipe, etc.)
-└── public/               # Static assets
-```
-
 ## Getting Started
 
 ### 1. Install Dependencies
@@ -62,28 +42,6 @@ npm run dev
 ```
 
 Open [http://localhost:3001](http://localhost:3001) in your browser.
-
-## Migration Status
-
-### Completed
-- Next.js project setup with TypeScript & Tailwind
-- API client migrated to TypeScript
-- Context providers migrated (AuthContext, AppContext)
-- Basic routing (Home, Login, Dashboard)
-- Authentication pages with Tailwind styling
-
-### To Be Migrated
-- Individual recipe components
-- Add Recipe form
-- Favorites functionality
-- Category browsing
-- Search functionality
-- Recipe detail view
-- Social auth integration
-
-### Planned Enhancements
-- **TanStack Query (React Query)** - API caching, background fetching, and async state management
-- **Zustand** - Lightweight global state management
 
 ## Learn More
 

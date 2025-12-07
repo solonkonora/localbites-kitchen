@@ -152,6 +152,20 @@ export async function verifyMagicLink(token: string): Promise<AuthResponse & { i
   });
 }
 
+export async function verifyEmail(token: string): Promise<AuthResponse> {
+  return request<AuthResponse>('/auth/verify-email', { 
+    method: 'POST', 
+    body: { token } 
+  });
+}
+
+export async function resendVerification(email: string): Promise<{ message: string }> {
+  return request<{ message: string }>('/auth/resend-verification', { 
+    method: 'POST', 
+    body: { email } 
+  });
+}
+
 // Favorites endpoints
 export async function getFavorites(): Promise<Favorite[]> {
   return request<Favorite[]>('/favorites', { method: 'GET' });
@@ -227,7 +241,8 @@ export async function getCategories(): Promise<Category[]> {
 
 const api = { 
   getRecipes, 
-  getRecipe, 
+  getRecipe,
+  getRecipeById: getRecipe,
   createRecipe, 
   updateRecipe, 
   deleteRecipe,
@@ -238,15 +253,19 @@ const api = {
   getCurrentUser,
   requestMagicLink,
   verifyMagicLink,
+  verifyEmail,
+  resendVerification,
   getFavorites,
   addFavorite,
   removeFavorite,
   checkFavorite,
   getInstructions,
+  getInstructionsByRecipeId: getInstructions,
   createInstructions,
   updateInstruction,
   deleteInstruction,
   getIngredients,
+  getIngredientsByRecipeId: getIngredients,
   createIngredients,
   updateIngredient,
   deleteIngredient,

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
+import api from "@/lib/apiClient";
 
 // Validation schemas
 const loginSchema = z.object({
@@ -51,6 +52,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState(false);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   const { signIn, signUp } = useAuth();
   const router = useRouter();
@@ -90,6 +94,8 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setApiError("");
+    setSignupSuccess(false);
+    setNeedsVerification(false);
 
     if (!validateForm()) {
       return;
@@ -100,17 +106,43 @@ export default function LoginPage() {
     try {
       if (isSignup) {
         await signUp(email, password, fullName);
+        // Signup no longer logs you in - email verification required
+        setSignupSuccess(true);
+        setApiError("");
       } else {
         await signIn(email, password);
+        router.push("/dashboard");
       }
-      router.push("/dashboard");
     } catch (err) {
-      const error = err as { response?: { message?: string } };
-      setApiError(
-        error.response?.message || "Authentication failed. Please try again."
-      );
+      const error = err as { response?: { error?: string; message?: string; emailVerified?: boolean; email?: string } };
+      
+      // Check if error is due to unverified email
+      if (error.response?.emailVerified === false) {
+        setNeedsVerification(true);
+        setApiError(error.response?.error || error.response?.message || "Please verify your email before logging in.");
+      } else {
+        setApiError(
+          error.response?.error || error.response?.message || "Authentication failed. Please try again."
+        );
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email) return;
+    
+    setResendLoading(true);
+    
+    try {
+      await api.resendVerification(email);
+      setApiError("Verification email sent! Please check your inbox.");
+    } catch (err) {
+      const error = err as { response?: { error?: string } };
+      setApiError(error.response?.error || "Failed to resend verification email");
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -118,6 +150,8 @@ export default function LoginPage() {
     setIsSignup(!isSignup);
     setErrors({});
     setApiError("");
+    setSignupSuccess(false);
+    setNeedsVerification(false);
     setEmail("");
     setPassword("");
     setConfirmPassword("");
@@ -299,7 +333,43 @@ export default function LoginPage() {
               </div>
             )}
 
-            {apiError && (
+            {signupSuccess && (
+              <div className="rounded-lg bg-green-50 border border-green-200 p-4 text-sm">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <p className="text-green-800 font-semibold mb-1">Account created successfully!</p>
+                    <p className="text-green-700">Please check your email <span className="font-semibold">{email}</span> for a verification link to activate your account.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {needsVerification && (
+              <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-4 text-sm">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <div>
+                    <p className="text-yellow-800 font-semibold mb-1">Email not verified</p>
+                    <p className="text-yellow-700 mb-2">Please verify your email address before logging in.</p>
+                    <button
+                      type="button"
+                      onClick={handleResendVerification}
+                      disabled={resendLoading}
+                      className="text-orange-600 hover:text-orange-700 font-medium underline disabled:text-gray-400"
+                    >
+                      {resendLoading ? 'Sending...' : 'Resend verification email'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {apiError && !needsVerification && !signupSuccess && (
               <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
                 {apiError}
               </div>
@@ -351,14 +421,14 @@ export default function LoginPage() {
 
           <div className="mt-4 text-center">
             <button
-              onClick={() => router.push('/magic-link')}
+              onClick={() => router.push("/magic-link")}
               className="text-sm text-purple-600 hover:text-purple-700 focus:outline-none font-medium"
             >
               Sign in with Magic Link (no password needed)
             </button>
           </div>
 
-           <div className="relative mt-6 mb-6">
+          <div className="relative mt-6 mb-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-300"></div>
             </div>
@@ -369,7 +439,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-           {/* OAuth Buttons */}
+          {/* OAuth Buttons */}
           <div className="mb-6 space-y-3">
             <button
               type="button"
