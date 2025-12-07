@@ -2,17 +2,17 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Clock, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 interface RecipeCardProps {
   id: number;
   title: string;
   image: string;
-  time: string;
+  // time: string;
   category: string;
 }
 
-export default function RecipeCard({ id, title, image, time, category }: RecipeCardProps) {
+export default function RecipeCard({ id, title, image, category }: RecipeCardProps) {
 
   return (
     <Link href={`/recipe/${id}`} className="block">
@@ -22,7 +22,7 @@ export default function RecipeCard({ id, title, image, time, category }: RecipeC
       <div className="recipe-image-wrapper relative h-80 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
         <Image
           src={image}
-          alt={title}
+          alt={title || 'Recipe Image'}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-115 group-hover:rotate-2"
           sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -40,12 +40,12 @@ export default function RecipeCard({ id, title, image, time, category }: RecipeC
           {title}
         </h3>
 
-        <div className="flex gap-6 text-base items-center text-gray-600 font-medium">
+        {/* <div className="flex gap-6 text-base items-center text-gray-600 font-medium">
           <div className="flex items-center gap-2 transition-colors duration-300 group-hover:text-orange-500">
             <Clock className="h-5 w-5 stroke-[2.5]" />
             <span>{time}</span>
           </div>
-        </div>
+        </div> */}
 
         <div className="absolute bottom-7 right-7 text-orange-500 opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
           <ArrowRight size={18} />

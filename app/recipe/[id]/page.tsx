@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, Clock, Users, Heart, Share2, ChefHat } from 'lucide-react';
+import { ArrowLeft, Heart, Share2, ChefHat } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import apiClient from '@/lib/apiClient';
 import type { Recipe, Ingredient, Instruction, Category } from '@/types';
@@ -149,7 +149,7 @@ export default function RecipeDetailPage() {
       <div className="relative h-[400px] md:h-[500px] w-full">
         <Image
           src={recipe.image_path || '/images/placeholder-recipe.jpg'}
-          alt={recipe.title}
+          alt={recipe.title || 'Recipe Image'}
           fill
           className="object-cover"
           priority
@@ -273,7 +273,7 @@ export default function RecipeDetailPage() {
               <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 space-y-4">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Recipe Info</h3>
                 
-                <div className="flex items-center gap-3 text-gray-700">
+                {/* <div className="flex items-center gap-3 text-gray-700">
                   <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
                     <Clock className="w-5 h-5 text-orange-600" />
                   </div>
@@ -291,7 +291,7 @@ export default function RecipeDetailPage() {
                     <p className="text-sm text-gray-500 font-medium">Servings</p>
                     <p className="font-semibold">4 people</p>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

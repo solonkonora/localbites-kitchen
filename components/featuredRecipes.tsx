@@ -7,7 +7,7 @@ interface DisplayRecipe {
   id: number;
   title: string;
   image: string;
-  prep_time: number;
+  // prep_time: number;
   category: string;
 }
 
@@ -21,7 +21,7 @@ export default function FeaturedRecipes() {
       id: recipe.id,
       title: recipe.title,
       image: recipe.image_path || 'https://res.cloudinary.com/drs0ewxd1/image/upload/v1735656088/foodie/featured-recipes/katikati.jpg',
-      prep_time: 45,
+      // prep_time: recipe.prep_time ?? 45,
       category: category?.name || 'General'
     };
   }) || [];
@@ -32,21 +32,21 @@ export default function FeaturedRecipes() {
       id: 1,
       title: 'Kati Kati',
       image: 'https://res.cloudinary.com/drs0ewxd1/image/upload/v1/cameroon-recipes/lunch/kati-kati.png',
-      prep_time: 45,
+      // prep_time: 45,
       category: 'Dinner'
     },
     {
       id: 2,
       title: 'Ndolé',
       image: 'https://res.cloudinary.com/drs0ewxd1/image/upload/v1/cameroon-recipes/lunch/ndole.jpeg',
-      prep_time: 60,
+      // prep_time: 60,
       category: 'Lunch'
     },
     {
       id: 3,
       title: 'Achu Soup',
       image: 'https://res.cloudinary.com/drs0ewxd1/image/upload/v1/cameroon-recipes/lunch/achu.jpg',
-      prep_time: 90,
+      // prep_time: 90,
       category: 'Dinner'
     }
   ];
@@ -79,7 +79,7 @@ export default function FeaturedRecipes() {
               id={recipe.id}
               title={recipe.title}
               image={recipe.image}
-              time={`${recipe.prep_time} mins`}
+              // time={`${recipe.prep_time} mins`}
               category={recipe.category}
             />
           ))}
