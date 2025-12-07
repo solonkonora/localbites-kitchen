@@ -15,7 +15,7 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // Fetch recipes for all users
+    // fetch recipes for all users
     fetchRecipes();
   }, [fetchRecipes]);
 
@@ -39,7 +39,7 @@ export default function Home() {
     <div className="min-h-screen">
       {/* hero Section */}
       <section className="min-h-screen flex items-stretch relative">
-        {/* Background Image for Mobile/Tablet, hidden on Desktop */}
+        {/* background Image for Mobile/Tablet, hidden on Desktop */}
         <div className="absolute inset-0 lg:hidden">
           <Image
             src="https://res.cloudinary.com/drs0ewxd1/image/upload/v1/cameroon-recipes/lunch/achu.jpg"

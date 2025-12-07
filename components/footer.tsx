@@ -1,5 +1,5 @@
-import { ArrowRight } from 'lucide-react';
-import Link from 'next/link';
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default function Footer() {
   return (
@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           <div>
             <h3 className="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight bg-gradient-to-r from-orange-600 to-orange-400 bg-clip-text text-transparent">
-              LocalBite Kitchen
+              LocalBites Kitchen
             </h3>
             <p className="text-white/80 leading-relaxed text-base md:text-lg">
               Preserving culinary traditions, one recipe at a time.
@@ -22,33 +22,48 @@ export default function Footer() {
             </h4>
             <ul className="space-y-3">
               <li>
-                <Link 
-                  href="/" 
+                <Link
+                  href="/"
                   className="group flex items-center gap-2 text-white/75 hover:text-white hover:translate-x-1 transition-all duration-300"
                 >
-                  <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-orange-600">→</span>
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-orange-600">
+                    →
+                  </span>
                   <span>Home</span>
-                  <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-auto" />
+                  <ArrowRight
+                    size={14}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-auto"
+                  />
                 </Link>
               </li>
               <li>
-                <a 
-                  href="#categories" 
+                <a
+                  href="#categories"
                   className="group flex items-center gap-2 text-white/75 hover:text-white hover:translate-x-1 transition-all duration-300"
                 >
-                  <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-orange-600">→</span>
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-orange-600">
+                    →
+                  </span>
                   <span>Meal Categories</span>
-                  <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-auto" />
+                  <ArrowRight
+                    size={14}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-auto"
+                  />
                 </a>
               </li>
               <li>
-                <a 
-                  href="#featuredRecipes" 
+                <a
+                  href="#featuredRecipes"
                   className="group flex items-center gap-2 text-white/75 hover:text-white hover:translate-x-1 transition-all duration-300"
                 >
-                  <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-orange-600">→</span>
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-orange-600">
+                    →
+                  </span>
                   <span>Featured Recipes</span>
-                  <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-auto" />
+                  <ArrowRight
+                    size={14}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-auto"
+                  />
                 </a>
               </li>
             </ul>
@@ -67,18 +82,17 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-white/15 pt-8 text-center">
           <p className="text-white/70 text-sm md:text-base tracking-wide">
-            &copy; 2025{' '}
-            <Link 
-              href="/" 
+            &copy; 2025{" "}
+            <Link
+              href="/"
               className="text-white/75 hover:text-orange-400 transition-colors duration-300 font-medium"
             >
               LocalBites Kitchen
-            </Link>{' '}
-            Kitchen. All rights reserved.
+            </Link>{" "}
+            . All rights reserved.
           </p>
         </div>
       </div>
     </footer>
   );
 }
-
