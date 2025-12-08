@@ -37,10 +37,7 @@ export default function DashboardPage() {
 
   // Get favorite recipe IDs for quick lookup - memoized to ensure proper recalculation
   const favoriteRecipeIds = useMemo(() => {
-    const ids = new Set(favoritesData.map((fav) => fav.recipe_id));
-    console.log("Favorite recipe IDs:", Array.from(ids));
-    console.log("Favorites data:", favoritesData);
-    return ids;
+    return new Set(favoritesData.map((fav) => fav.recipe_id));
   }, [favoritesData]);
 
   // Add favorite mutation
@@ -143,7 +140,7 @@ export default function DashboardPage() {
       <header className="border-b bg-white shadow-sm">
         <div className="container mx-auto flex items-center justify-between px-4 py-4">
           <h1 className="text-2xl font-bold text-gray-900">
-            Local<span className="text-orange-500">Bite</span>
+            Local<span className="text-orange-500">Bites</span>
           </h1>
           <div className="flex items-center gap-4">
             {user ? (
@@ -284,7 +281,6 @@ export default function DashboardPage() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredRecipes.map((recipe) => {
                 const isFavorite = favoriteRecipeIds.has(recipe.id);
-                console.log(`Recipe ${recipe.id} (${recipe.title}): isFavorite=${isFavorite}`);
                 
                 return (
                   <div
