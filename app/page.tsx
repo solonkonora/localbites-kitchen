@@ -15,7 +15,7 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // fetch recipes for all users
+    // Fetch recipes for all users
     fetchRecipes();
   }, [fetchRecipes]);
 
@@ -37,9 +37,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      {/* hero Section */}
+      {/* Hero Section */}
       <section className="min-h-screen flex items-stretch relative">
-        {/* background Image for Mobile/Tablet, hidden on Desktop */}
+        {/* Background Image for Mobile/Tablet, hidden on Desktop */}
         <div className="absolute inset-0 lg:hidden">
           <Image
             src="https://res.cloudinary.com/drs0ewxd1/image/upload/v1/cameroon-recipes/lunch/achu.jpg"
@@ -48,12 +48,12 @@ export default function Home() {
             className="object-cover object-center"
             priority
           />
-          {/* overlay for better text readability */}
+          {/* Overlay for better text readability */}
           <div className="absolute inset-0 bg-black/80"></div>
         </div>
 
         <div className="w-full flex flex-col lg:flex-row relative z-10">
-          {/* only visible on Desktop */}
+          {/* Only visible on Desktop */}
           <div className="hidden lg:block lg:w-1/2 lg:min-h-screen">
             <div className="relative w-full h-full">
               <Image
@@ -66,7 +66,7 @@ export default function Home() {
             </div>
           </div>
           
-          {/* text right side */}
+          {/* Text right side */}
           <div className="w-full lg:w-1/2 flex items-center justify-center px-4 py-12 min-h-screen lg:bg-gradient-to-br lg:from-orange-50 lg:via-white lg:to-yellow-50">
             <div className="max-w-2xl space-y-6 text-center lg:text-left">
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-white lg:text-gray-900">
@@ -106,7 +106,7 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* stats or features */}
+              {/* Stats or Features */}
               <div className="grid grid-cols-3 gap-4 pt-8">
                 <div className="text-center lg:text-left">
                   <p className="text-2xl sm:text-3xl font-bold text-orange-400 lg:text-orange-600">
