@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Heart } from "lucide-react";
+import { Heart, Search } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAppContext } from "@/contexts/AppContext";
@@ -14,13 +14,15 @@ type Tab = "home" | "favorites" | "add";
 
 export default function DashboardPage() {
   const { user, loading: authLoading, logout } = useAuth();
-  const { recipes, fetchRecipes, fetchCategories } = useAppContext();
+  const { recipes, fetchRecipes, fetchCategories, categories } = useAppContext();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("home");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const queryClient = useQueryClient();
 
   // Fetch user's favorites
-  const { data: favoritesData = [], refetch: refetchFavorites } = useQuery({
+  const { data: favoritesData = [] } = useQuery({
     queryKey: ["favorites"],
     queryFn: async () => {
       try {
@@ -33,22 +35,26 @@ export default function DashboardPage() {
     enabled: !!user,
   });
 
-  // Get favorite recipe IDs for quick lookup
-  const favoriteRecipeIds = new Set(favoritesData.map((fav) => fav.recipe_id));
+  // Get favorite recipe IDs for quick lookup - memoized to ensure proper recalculation
+  const favoriteRecipeIds = useMemo(() => {
+    const ids = new Set(favoritesData.map((fav) => fav.recipe_id));
+    console.log("Favorite recipe IDs:", Array.from(ids));
+    console.log("Favorites data:", favoritesData);
+    return ids;
+  }, [favoritesData]);
 
   // Add favorite mutation
   const addFavoriteMutation = useMutation({
     mutationFn: (recipeId: number) => apiClient.addFavorite(recipeId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["favorites"] });
-      refetchFavorites();
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["favorites"] });
     },
     onError: (error: Error & { status?: number }) => {
       console.error("Error adding favorite:", error);
       // If it's already favorited (409), just refetch to sync state
       if (error.status === 409) {
         console.log("Recipe already favorited, refreshing state...");
-        refetchFavorites();
+        queryClient.invalidateQueries({ queryKey: ["favorites"] });
       } else {
         alert("Failed to add favorite. Please try again.");
       }
@@ -58,46 +64,67 @@ export default function DashboardPage() {
   // Remove favorite mutation
   const removeFavoriteMutation = useMutation({
     mutationFn: (recipeId: number) => apiClient.removeFavorite(recipeId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["favorites"] });
-      refetchFavorites();
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["favorites"] });
     },
     onError: (error: Error & { status?: number }) => {
       console.error("Error removing favorite:", error);
       // If it's not found (404), just refetch to sync state
       if (error.status === 404) {
         console.log("Favorite not found, refreshing state...");
-        refetchFavorites();
+        queryClient.invalidateQueries({ queryKey: ["favorites"] });
       } else {
         alert("Failed to remove favorite. Please try again.");
       }
     },
   });
 
-  const toggleFavorite = async (recipeId: number) => {
+  const toggleFavorite = async (recipeId: number, event?: React.MouseEvent) => {
+    // Prevent event bubbling
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+
+    // Prompt unauthenticated users to sign up
+    if (!user) {
+      if (confirm("You need to sign up to save favorites. Would you like to sign up now?")) {
+        router.push("/login?redirect=/dashboard");
+      }
+      return;
+    }
+
     console.log("Toggling favorite for recipe:", recipeId);
-    console.log("Current favorites:", favoritesData);
-    console.log("Is currently favorite:", favoriteRecipeIds.has(recipeId));
+    const isFavorite = favoriteRecipeIds.has(recipeId);
+    console.log("Is currently favorite:", isFavorite);
     
-    if (favoriteRecipeIds.has(recipeId)) {
-      await removeFavoriteMutation.mutateAsync(recipeId);
-    } else {
-      await addFavoriteMutation.mutateAsync(recipeId);
+    try {
+      if (isFavorite) {
+        await removeFavoriteMutation.mutateAsync(recipeId);
+      } else {
+        await addFavoriteMutation.mutateAsync(recipeId);
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
     }
   };
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push("/login");
-    }
-  }, [user, authLoading, router]);
+  // Filter recipes based on search query and category
+  const filteredRecipes = useMemo(() => {
+    return recipes.filter((recipe) => {
+      const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           recipe.description?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategory === "all" || recipe.category_id === parseInt(selectedCategory);
+      return matchesSearch && matchesCategory;
+    });
+  }, [recipes, searchQuery, selectedCategory]);
 
   useEffect(() => {
     fetchRecipes();
     fetchCategories();
   }, [fetchRecipes, fetchCategories]);
 
-  if (authLoading || !user) {
+  if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600"></div>
@@ -119,16 +146,35 @@ export default function DashboardPage() {
             Local<span className="text-orange-500">Bite</span>
           </h1>
           <div className="flex items-center gap-4">
-            <span className="text-gray-700">
-              Welcome,{" "}
-              {user.full_name || user.username || user.email.split("@")[0]}!
-            </span>
-            <button
-              onClick={handleLogout}
-              className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-300"
-            >
-              Logout
-            </button>
+            {user ? (
+              <>
+                <span className="text-gray-700">
+                  Welcome,{" "}
+                  {user.full_name || user.username || user.email.split("@")[0]}!
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-300"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => router.push("/login?redirect=/dashboard")}
+                  className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-300"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => router.push("/login?redirect=/dashboard")}
+                  className="rounded-lg bg-gradient-to-r from-orange-500 to-red-600 px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:shadow-lg"
+                >
+                  Sign Up
+                </button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -151,7 +197,15 @@ export default function DashboardPage() {
               )}
             </button>
             <button
-              onClick={() => setActiveTab("favorites")}
+              onClick={() => {
+                if (!user) {
+                  if (confirm("You need to sign up to view your favorites. Would you like to sign up now?")) {
+                    router.push("/login?redirect=/dashboard");
+                  }
+                  return;
+                }
+                setActiveTab("favorites");
+              }}
               className={`relative px-8 py-4 font-semibold transition-all duration-300 ${
                 activeTab === "favorites"
                   ? "text-orange-600"
@@ -164,7 +218,15 @@ export default function DashboardPage() {
               )}
             </button>
             <button
-              onClick={() => setActiveTab("add")}
+              onClick={() => {
+                if (!user) {
+                  if (confirm("You need to sign up to add recipes. Would you like to sign up now?")) {
+                    router.push("/login?redirect=/dashboard");
+                  }
+                  return;
+                }
+                setActiveTab("add");
+              }}
               className={`relative px-8 py-4 font-semibold transition-all duration-300 ${
                 activeTab === "add"
                   ? "text-orange-600"
@@ -184,12 +246,45 @@ export default function DashboardPage() {
       <main className="container mx-auto px-4 py-8">
         {activeTab === "home" && (
           <div>
-            <h2 className="mb-6 text-2xl font-bold text-gray-900">
-              All Recipes
-            </h2>
+            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">
+                All Recipes
+              </h2>
+              
+              {/* Search and Filter Bar */}
+              <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                {/* Search Input */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search recipes..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full md:w-64 rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                  />
+                </div>
+
+                {/* Category Filter */}
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                >
+                  <option value="all">All Categories</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id.toString()}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {recipes.map((recipe) => {
+              {filteredRecipes.map((recipe) => {
                 const isFavorite = favoriteRecipeIds.has(recipe.id);
+                console.log(`Recipe ${recipe.id} (${recipe.title}): isFavorite=${isFavorite}`);
                 
                 return (
                   <div
@@ -208,11 +303,7 @@ export default function DashboardPage() {
                         
                         {/* Heart Icon on Image */}
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            toggleFavorite(recipe.id);
-                          }}
+                          onClick={(e) => toggleFavorite(recipe.id, e)}
                           disabled={
                             addFavoriteMutation.isPending ||
                             removeFavoriteMutation.isPending
@@ -262,9 +353,11 @@ export default function DashboardPage() {
                 );
               })}
             </div>
-            {recipes.length === 0 && (
-              <p className="text-center text-gray-600">
-                No recipes found. Add your first recipe!
+            {filteredRecipes.length === 0 && (
+              <p className="text-center text-gray-600 mt-8">
+                {searchQuery || selectedCategory !== "all" 
+                  ? "No recipes found matching your search criteria."
+                  : "No recipes found. Add your first recipe!"}
               </p>
             )}
           </div>

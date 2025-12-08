@@ -41,15 +41,21 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const res = await fetch(url, opts);
   if (!res.ok) {
     const text = await res.text();
-    let err: string | Record<string, unknown> = text;
+    let errorData: string | Record<string, unknown> = text;
     try { 
-      err = JSON.parse(text); 
+      errorData = JSON.parse(text); 
     } catch { 
       // ignore non-json response 
     }
-    const error = new Error('API request failed') as Error & { status: number; response: string | Record<string, unknown> };
-    error.status = res.status;
-    error.response = err;
+    
+    const errorMessage = typeof errorData === 'object' && errorData.message 
+      ? String(errorData.message) 
+      : `API request failed: ${res.status} ${res.statusText}`;
+    
+    const error = Object.assign(
+      new Error(errorMessage),
+      { status: res.status, response: errorData }
+    );
     throw error;
   }
 
@@ -100,15 +106,21 @@ export async function uploadImage(formData: FormData): Promise<{ imageUrl: strin
 
   if (!res.ok) {
     const text = await res.text();
-    let err: string | Record<string, unknown> = text;
+    let errorData: string | Record<string, unknown> = text;
     try { 
-      err = JSON.parse(text); 
+      errorData = JSON.parse(text); 
     } catch { 
-      // ignore 
+      // ignore non-json response
     }
-    const error = new Error('Image upload failed') as Error & { status: number; response: string | Record<string, unknown> };
-    error.status = res.status;
-    error.response = err;
+    
+    const errorMessage = typeof errorData === 'object' && errorData.message 
+      ? String(errorData.message) 
+      : `Image upload failed: ${res.status} ${res.statusText}`;
+    
+    const error = Object.assign(
+      new Error(errorMessage),
+      { status: res.status, response: errorData }
+    );
     throw error;
   }
 
