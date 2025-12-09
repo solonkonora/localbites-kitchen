@@ -194,26 +194,60 @@ export default function RecipeDetailPage() {
                 </div>
                 <h2 className="text-3xl font-bold text-gray-900">Ingredients</h2>
               </div>
-              <ul className="space-y-3">
-                {ingredients.length > 0 ? (
-                  ingredients.map((ingredient) => (
-                    <li
-                      key={ingredient.id}
-                      className="flex items-start gap-3 text-gray-700 text-lg group"
-                    >
-                      <span className="w-2 h-2 bg-orange-500 rounded-full mt-2.5 group-hover:scale-150 transition-transform duration-300" />
-                      <span>
-                        <strong className="font-semibold text-gray-900">
-                          {ingredient.quantity} {ingredient.unit}
-                        </strong>{' '}
-                        {ingredient.name}
-                      </span>
-                    </li>
-                  ))
-                ) : (
-                  <p className="text-gray-500 italic">No ingredients listed.</p>
-                )}
-              </ul>
+
+              {/* Main Ingredients */}
+              {ingredients.filter(ing => ing.is_main).length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-orange-600 mb-3">Main Ingredients</h3>
+                  <ul className="space-y-3">
+                    {ingredients
+                      .filter(ing => ing.is_main)
+                      .map((ingredient) => (
+                        <li
+                          key={ingredient.id}
+                          className="flex items-start gap-3 text-gray-700 text-lg group"
+                        >
+                          <span className="w-2 h-2 bg-orange-500 rounded-full mt-2.5 group-hover:scale-150 transition-transform duration-300" />
+                          <span>
+                            <strong className="font-semibold text-gray-900">
+                              {ingredient.quantity} {ingredient.unit}
+                            </strong>{' '}
+                            {ingredient.name}
+                          </span>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Optional Ingredients */}
+              {ingredients.filter(ing => !ing.is_main).length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-600 mb-3">Optional Ingredients</h3>
+                  <ul className="space-y-3">
+                    {ingredients
+                      .filter(ing => !ing.is_main)
+                      .map((ingredient) => (
+                        <li
+                          key={ingredient.id}
+                          className="flex items-start gap-3 text-gray-600 text-lg group"
+                        >
+                          <span className="w-2 h-2 bg-gray-400 rounded-full mt-2.5 group-hover:scale-150 transition-transform duration-300" />
+                          <span>
+                            <strong className="font-medium text-gray-700">
+                              {ingredient.quantity} {ingredient.unit}
+                            </strong>{' '}
+                            {ingredient.name}
+                          </span>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              )}
+
+              {ingredients.length === 0 && (
+                <p className="text-gray-500 italic">No ingredients listed.</p>
+              )}
             </section>
 
             {/* Instructions */}

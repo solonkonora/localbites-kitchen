@@ -71,6 +71,10 @@ export async function getRecipes(): Promise<Recipe[]> {
   return request<Recipe[]>('/recipes', { method: 'GET' });
 }
 
+export async function getMyRecipes(): Promise<Recipe[]> {
+  return request<Recipe[]>('/recipes/my-recipes', { method: 'GET' });
+}
+
 export async function getRecipe(id: number): Promise<Recipe> {
   return request<Recipe>(`/recipes/${id}`, { method: 'GET' });
 }
@@ -253,6 +257,7 @@ export async function getCategories(): Promise<Category[]> {
 
 const api = { 
   getRecipes, 
+  getMyRecipes,
   getRecipe,
   getRecipeById: getRecipe,
   createRecipe, 
