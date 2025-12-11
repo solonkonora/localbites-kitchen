@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowLeft, Heart, Share2, ChefHat } from 'lucide-react';
+import { ArrowLeft, Heart, Share2, ChefHat, Pencil, Trash2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import apiClient from '@/lib/apiClient';
 import type { Recipe, Ingredient, Instruction, Category } from '@/types';
@@ -100,6 +100,27 @@ export default function RecipeDetailPage() {
     }
   };
 
+  const handleEdit = () => {
+    router.push(`/recipe/${recipeId}/edit`);
+  };
+
+  const handleDelete = async () => {
+    if (!confirm(`Are you sure you want to delete "${recipe?.title}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await apiClient.deleteRecipe(Number(recipeId));
+      alert('Recipe deleted successfully!');
+      router.push('/dashboard?tab=my-recipes');
+    } catch (err) {
+      console.error('Error deleting recipe:', err);
+      alert('Failed to delete recipe. Please try again.');
+    }
+  };
+
+  const isOwner = user && recipe && recipe.user_id === user.id;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 flex items-center justify-center">
@@ -147,13 +168,19 @@ export default function RecipeDetailPage() {
       {/* Hero Section */}
       <div className="relative w-full bg-gray-900">
         <div className="relative h-[400px] md:h-[500px] max-w-7xl mx-auto">
-          <Image
-            src={recipe.image_path || '/images/placeholder-recipe.jpg'}
-            alt={recipe.title || 'Recipe Image'}
-            fill
-            className="object-contain"
-            priority
-          />
+          {recipe.image_path ? (
+            <Image
+              src={recipe.image_path}
+              alt={recipe.title || 'Recipe Image'}
+              fill
+              className="object-contain"
+              priority
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full bg-gray-200">
+              <span className="text-gray-500 text-xl">No image available</span>
+            </div>
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
         </div>
         
@@ -194,26 +221,60 @@ export default function RecipeDetailPage() {
                 </div>
                 <h2 className="text-3xl font-bold text-gray-900">Ingredients</h2>
               </div>
-              <ul className="space-y-3">
-                {ingredients.length > 0 ? (
-                  ingredients.map((ingredient) => (
-                    <li
-                      key={ingredient.id}
-                      className="flex items-start gap-3 text-gray-700 text-lg group"
-                    >
-                      <span className="w-2 h-2 bg-orange-500 rounded-full mt-2.5 group-hover:scale-150 transition-transform duration-300" />
-                      <span>
-                        <strong className="font-semibold text-gray-900">
-                          {ingredient.quantity} {ingredient.unit}
-                        </strong>{' '}
-                        {ingredient.name}
-                      </span>
-                    </li>
-                  ))
-                ) : (
-                  <p className="text-gray-500 italic">No ingredients listed.</p>
-                )}
-              </ul>
+
+              {/* Main Ingredients */}
+              {ingredients.filter(ing => ing.is_main).length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-orange-600 mb-3">Main Ingredients</h3>
+                  <ul className="space-y-3">
+                    {ingredients
+                      .filter(ing => ing.is_main)
+                      .map((ingredient) => (
+                        <li
+                          key={ingredient.id}
+                          className="flex items-start gap-3 text-gray-700 text-lg group"
+                        >
+                          <span className="w-2 h-2 bg-orange-500 rounded-full mt-2.5 group-hover:scale-150 transition-transform duration-300" />
+                          <span>
+                            <strong className="font-semibold text-gray-900">
+                              {ingredient.quantity} {ingredient.unit}
+                            </strong>{' '}
+                            {ingredient.name}
+                          </span>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Optional Ingredients */}
+              {ingredients.filter(ing => !ing.is_main).length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-600 mb-3">Optional Ingredients</h3>
+                  <ul className="space-y-3">
+                    {ingredients
+                      .filter(ing => !ing.is_main)
+                      .map((ingredient) => (
+                        <li
+                          key={ingredient.id}
+                          className="flex items-start gap-3 text-gray-600 text-lg group"
+                        >
+                          <span className="w-2 h-2 bg-gray-400 rounded-full mt-2.5 group-hover:scale-150 transition-transform duration-300" />
+                          <span>
+                            <strong className="font-medium text-gray-700">
+                              {ingredient.quantity} {ingredient.unit}
+                            </strong>{' '}
+                            {ingredient.name}
+                          </span>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              )}
+
+              {ingredients.length === 0 && (
+                <p className="text-gray-500 italic">No ingredients listed.</p>
+              )}
             </section>
 
             {/* Instructions */}
@@ -268,6 +329,27 @@ export default function RecipeDetailPage() {
                   <Share2 size={24} />
                   Share Recipe
                 </button>
+
+                {/* Edit and Delete buttons (only for recipe owner) */}
+                {isOwner && (
+                  <>
+                    <button
+                      onClick={handleEdit}
+                      className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-blue-50 text-blue-600 rounded-xl font-semibold hover:bg-blue-100 border-2 border-blue-200 transition-all duration-300"
+                    >
+                      <Pencil size={24} />
+                      Edit Recipe
+                    </button>
+
+                    <button
+                      onClick={handleDelete}
+                      className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-red-50 text-red-600 rounded-xl font-semibold hover:bg-red-100 border-2 border-red-200 transition-all duration-300"
+                    >
+                      <Trash2 size={24} />
+                      Delete Recipe
+                    </button>
+                  </>
+                )}
               </div>
 
               {/* Recipe Info */}

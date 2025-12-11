@@ -8,9 +8,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAppContext } from "@/contexts/AppContext";
 import Favorites from "@/components/Favorites";
+import AddRecipe from "@/components/AddRecipe";
+import MyRecipes from "@/components/MyRecipes";
 import apiClient from "@/lib/apiClient";
 
-type Tab = "home" | "favorites" | "add";
+type Tab = "home" | "favorites" | "add" | "my-recipes";
 
 export default function DashboardPage() {
   const { user, loading: authLoading, logout } = useAuth();
@@ -235,6 +237,27 @@ export default function DashboardPage() {
                 <span className="absolute bottom-0 left-0 right-0 h-1 bg-orange-500 rounded-t-lg"></span>
               )}
             </button>
+            <button
+              onClick={() => {
+                if (!user) {
+                  if (confirm("You need to sign up to view your recipes. Would you like to sign up now?")) {
+                    router.push("/login?redirect=/dashboard");
+                  }
+                  return;
+                }
+                setActiveTab("my-recipes");
+              }}
+              className={`relative px-8 py-4 font-semibold transition-all duration-300 ${
+                activeTab === "my-recipes"
+                  ? "text-orange-600"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+              }`}
+            >
+              <span className="relative z-10">My Recipes</span>
+              {activeTab === "my-recipes" && (
+                <span className="absolute bottom-0 left-0 right-0 h-1 bg-orange-500 rounded-t-lg"></span>
+              )}
+            </button>
           </nav>
         </div>
       </div>
@@ -364,16 +387,11 @@ export default function DashboardPage() {
         )}
 
         {activeTab === "add" && (
-          <div>
-            <h2 className="mb-6 text-2xl font-bold text-gray-900">
-              Add New Recipe
-            </h2>
-            <div className="rounded-lg bg-white p-6 shadow-md">
-              <p className="text-gray-600">
-                Recipe form will be implemented here.
-              </p>
-            </div>
-          </div>
+          <AddRecipe />
+        )}
+
+        {activeTab === "my-recipes" && (
+          <MyRecipes />
         )}
       </main>
     </div>

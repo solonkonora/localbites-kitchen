@@ -31,6 +31,7 @@ export interface Ingredient {
   name: string;
   quantity: string;
   unit?: string;
+  is_main: boolean;
 }
 
 export interface Instruction {
