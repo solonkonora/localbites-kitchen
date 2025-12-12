@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Bot, User, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User, Loader2, LogIn } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import Link from "next/link";
 
 interface Message {
   id: string;
@@ -11,6 +13,7 @@ interface Message {
 }
 
 export default function FloatingChatbot() {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -42,6 +45,9 @@ export default function FloatingChatbot() {
   }, [isOpen]);
 
   const handleSendMessage = async () => {
+    if (!user) {
+      return; // Should not happen as input is disabled for non-authenticated users
+    }
     if (!inputMessage.trim() || isLoading) return;
 
     const userMessage: Message = {
@@ -117,14 +123,26 @@ export default function FloatingChatbot() {
     <>
       {/* Floating Chat Button */}
       {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-orange-500 to-red-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 group"
-          aria-label="Open chat"
-        >
-          <MessageCircle className="w-6 h-6" />
-          <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
-        </button>
+        <div className="fixed bottom-6 right-6 z-50">
+          {/* Ripple effect rings */}
+          <div className="absolute inset-0 -m-2">
+            <span className="absolute inset-0 rounded-full bg-orange-500 opacity-75 animate-ping"></span>
+            <span className="absolute inset-0 rounded-full bg-orange-500 opacity-50 animate-ping" style={{ animationDelay: '0.5s' }}></span>
+          </div>
+          
+          <button
+            onClick={() => setIsOpen(true)}
+            className="relative bg-gradient-to-r from-orange-500 to-red-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 animate-bounce group"
+            aria-label="Open chat"
+          >
+            <Bot className="w-6 h-6 animate-pulse" />
+            {/* Notification badge with stronger pulse */}
+            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-green-500 border-2 border-white"></span>
+            </span>
+          </button>
+        </div>
       )}
 
       {/* Chat Window */}
@@ -151,7 +169,29 @@ export default function FloatingChatbot() {
           </div>
 
           {/* Messages Container */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+          {!user ? (
+            // Show signup prompt for non-authenticated users
+            <div className="flex-1 flex items-center justify-center p-6 bg-gray-50">
+              <div className="text-center max-w-sm">
+                <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center">
+                  <LogIn className="w-10 h-10 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  Sign in to Chat
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Join LocalBite to unlock AI-powered recipe assistance, personalized recommendations, and cooking tips.
+                </p>
+                <Link
+                  href="/login"
+                  className="inline-block px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-full hover:shadow-lg transition-all duration-300 hover:scale-105"
+                >
+                  Sign In / Sign Up
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -213,8 +253,10 @@ export default function FloatingChatbot() {
 
             <div ref={messagesEndRef} />
           </div>
+          )}
 
-          {/* Input Area */}
+          {/* Input Area - Only show for authenticated users */}
+          {user && (
           <div className="p-4 bg-white border-t border-gray-200">
             <div className="flex gap-2">
               <input
@@ -259,6 +301,7 @@ export default function FloatingChatbot() {
               </button>
             </div>
           </div>
+          )}
         </div>
       )}
     </>
