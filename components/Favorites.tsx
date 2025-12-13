@@ -171,7 +171,7 @@ export default function Favorites() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => router.push(`/recipe/${recipe.id}`)}
-                    className="flex-1 rounded-lg bg-gradient-to-r from-orange-500 to-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:shadow-lg hover:scale-105"
+                    className="flex-1 rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:shadow-lg hover:scale-105"
                   >
                     View Details
                   </button>

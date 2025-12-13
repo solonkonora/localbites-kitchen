@@ -29,7 +29,7 @@ export default function RecipeCard({ id, title, image, category }: RecipeCardPro
         />
 
         <div className="absolute top-4 right-4 z-10">
-          <span className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white text-sm font-bold rounded-full uppercase tracking-wide shadow-lg backdrop-blur-sm">
+          <span className="px-4 py-2 bg-orange-600 text-white text-sm font-bold rounded-full uppercase tracking-wide shadow-lg backdrop-blur-sm">
             {category}
           </span>
         </div>

@@ -132,7 +132,7 @@ export default function FloatingChatbot() {
           
           <button
             onClick={() => setIsOpen(true)}
-            className="relative bg-gradient-to-r from-orange-500 to-red-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 animate-bounce group"
+            className="relative bg-orange-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 animate-bounce group"
             aria-label="Open chat"
           >
             <Bot className="w-6 h-6 animate-pulse" />
@@ -149,7 +149,7 @@ export default function FloatingChatbot() {
       {isOpen && (
         <div className="fixed bottom-6 right-6 z-50 w-[400px] h-[600px] max-w-[calc(100vw-3rem)] max-h-[calc(100vh-3rem)] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200">
           {/* Chat Header */}
-          <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white p-4 flex items-center justify-between">
+          <div className="bg-orange-600 text-white p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                 <Bot className="w-6 h-6" />
@@ -173,7 +173,7 @@ export default function FloatingChatbot() {
             // Show signup prompt for non-authenticated users
             <div className="flex-1 flex items-center justify-center p-6 bg-gray-50">
               <div className="text-center max-w-sm">
-                <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center">
+                <div className="w-20 h-20 mx-auto mb-4 bg-orange-600 rounded-full flex items-center justify-center">
                   <LogIn className="w-10 h-10 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">
@@ -184,7 +184,7 @@ export default function FloatingChatbot() {
                 </p>
                 <Link
                   href="/login"
-                  className="inline-block px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-full hover:shadow-lg transition-all duration-300 hover:scale-105"
+                  className="inline-block px-6 py-3 bg-orange-600 text-white font-medium rounded-full hover:shadow-lg transition-all duration-300 hover:scale-105"
                 >
                   Sign In / Sign Up
                 </Link>
@@ -203,7 +203,7 @@ export default function FloatingChatbot() {
                 <div
                   className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
                     message.role === "user"
-                      ? "bg-gradient-to-r from-orange-500 to-red-600"
+                      ? "bg-orange-600"
                       : "bg-gradient-to-r from-blue-500 to-purple-600"
                   }`}
                 >
@@ -223,7 +223,7 @@ export default function FloatingChatbot() {
                   <div
                     className={`rounded-2xl px-4 py-2 ${
                       message.role === "user"
-                        ? "bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-br-none"
+                        ? "bg-orange-600 text-white rounded-br-none"
                         : "bg-white text-gray-800 shadow-sm border border-gray-200 rounded-bl-none"
                     }`}
                   >
@@ -272,7 +272,7 @@ export default function FloatingChatbot() {
               <button
                 onClick={handleSendMessage}
                 disabled={!inputMessage.trim() || isLoading}
-                className="p-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+                className="p-2 bg-orange-600 text-white rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
                 aria-label="Send message"
               >
                 <Send className="w-5 h-5" />

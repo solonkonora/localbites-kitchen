@@ -140,7 +140,7 @@ export default function RecipeDetailPage() {
           <p className="text-gray-600 mb-6">{error || 'The recipe you\'re looking for doesn\'t exist.'}</p>
           <button
             onClick={() => router.push('/')}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-full hover:shadow-lg transition-all duration-300"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 text-white font-semibold rounded-full hover:shadow-lg transition-all duration-300"
           >
             <ArrowLeft size={20} />
             Back to Home
@@ -287,7 +287,7 @@ export default function RecipeDetailPage() {
                       key={instruction.id}
                       className="flex gap-4 group"
                     >
-                      <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-md group-hover:scale-110 transition-transform duration-300">
+                      <div className="flex-shrink-0 w-10 h-10 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-md group-hover:scale-110 transition-transform duration-300">
                         {instruction.step_number}
                       </div>
                       <p className="text-gray-700 text-lg leading-relaxed pt-1.5">

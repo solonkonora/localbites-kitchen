@@ -217,7 +217,7 @@ export default function CategoryPage() {
                     </p>
                     <button
                       onClick={() => router.push(`/recipe/${recipe.id}`)}
-                      className="w-full rounded-lg bg-gradient-to-r from-orange-500 to-red-600 px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:shadow-lg hover:scale-105"
+                      className="w-full rounded-lg bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:shadow-lg hover:scale-105"
                     >
                       View Details
                     </button>
