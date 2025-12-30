@@ -83,7 +83,7 @@ export default function Home() {
               </div>
 
               {/* Description */}
-              <p className="text-lg sm:text-xl leading-relaxed max-w-lg mx-auto lg:mx-0 text-gray-100 lg:text-gray-600 font-light">
+              <p className="text-lg sm:text-xl leading-relaxed max-w-lg mx-auto lg:mx-0 text-gray-100 lg:text-gray-800 font-light">
                 Discover authentic family recipes passed down through generations. 
                 <span className="block mt-2 font-medium text-white lg:text-gray-800">
                   From comfort classics to cultural treasures.
