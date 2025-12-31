@@ -1,18 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function VerifyMagicLinkPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { verifyMagicLink } = useAuth();
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    const token = searchParams.get('token');
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
 
     const verify = async () => {
       if (!token) {
@@ -40,7 +43,7 @@ export default function VerifyMagicLinkPage() {
     };
 
     verify();
-  }, [searchParams, verifyMagicLink, router]);
+  }, [verifyMagicLink, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-indigo-100 px-4">
