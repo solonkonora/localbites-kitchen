@@ -38,9 +38,6 @@ const signupSchema = z
     path: ["confirmPassword"],
   });
 
-type LoginFormData = z.infer<typeof loginSchema>;
-type SignupFormData = z.infer<typeof signupSchema>;
-
 export default function LoginPage() {
   const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState("");
@@ -64,9 +61,9 @@ export default function LoginPage() {
     window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google`;
   };
 
-  const handleFacebookLogin = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/facebook`;
-  };
+  // const handleFacebookLogin = () => {
+  //   window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/facebook`;
+  // };
 
   const validateForm = (): boolean => {
     try {
@@ -418,15 +415,6 @@ export default function LoginPage() {
                 : "Don't have an account? Sign up"}
             </button>
           </div>
-
-          {/* <div className="mt-4 text-center">
-            <button
-              onClick={() => router.push("/magic-link")}
-              className="text-sm text-purple-600 hover:text-purple-700 focus:outline-none font-medium"
-            >
-              Sign in with Magic Link (no password needed)
-            </button>
-          </div> */}
 
           <div className="relative mt-6 mb-6">
             <div className="absolute inset-0 flex items-center">

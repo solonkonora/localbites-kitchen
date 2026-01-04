@@ -9,8 +9,6 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, full_name: string) => Promise<AuthResponse>;
   signIn: (email: string, password: string) => Promise<AuthResponse>;
-  requestMagicLink: (email: string) => Promise<{ message: string; isNewUser: boolean }>;
-  verifyMagicLink: (token: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -76,20 +74,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
-  const requestMagicLink = useCallback(async (email: string) => {
-    return await api.requestMagicLink(email);
-  }, []);
-
-  const verifyMagicLink = useCallback(async (token: string) => {
-    const data = await api.verifyMagicLink(token);
-    if (data.token) {
-      localStorage.setItem('authToken', data.token);
-    }
-    setUser(data.user);
-  }, []);
-
   return (
-    <AuthContext.Provider value={{ user, loading, signUp, signIn, requestMagicLink, verifyMagicLink, logout }}>
+    <AuthContext.Provider value={{ user, loading, signUp, signIn, logout }}>
       {children}
     </AuthContext.Provider>
   );
