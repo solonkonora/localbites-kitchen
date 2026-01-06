@@ -11,6 +11,11 @@ if (!process.env.OPENAI_API_KEY) {
   throw new Error('Missing OpenAI API Key in environment variables');
 }
 
+// Constants for validation
+const MAX_MESSAGE_LENGTH = 2000;
+const MAX_CONVERSATION_HISTORY = 20;
+const VALID_ROLES = ['user', 'assistant', 'system'] as const;
+
 // Function to search recipes
 async function searchRecipes(query: string) {
   try {
@@ -42,6 +47,61 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (message.length > MAX_MESSAGE_LENGTH) {
+      return NextResponse.json(
+        { error: `Message too long. Maximum ${MAX_MESSAGE_LENGTH} characters allowed` },
+        { status: 400 }
+      );
+    }
+
+    // Validate conversationHistory
+    if (conversationHistory !== undefined) {
+      if (!Array.isArray(conversationHistory)) {
+        return NextResponse.json(
+          { error: 'Conversation history must be an array' },
+          { status: 400 }
+        );
+      }
+
+      if (conversationHistory.length > MAX_CONVERSATION_HISTORY) {
+        return NextResponse.json(
+          { error: `Conversation history too long. Maximum ${MAX_CONVERSATION_HISTORY} messages allowed` },
+          { status: 400 }
+        );
+      }
+
+      // Validate each message in history
+      for (const msg of conversationHistory) {
+        if (!msg || typeof msg !== 'object') {
+          return NextResponse.json(
+            { error: 'Invalid message format in conversation history' },
+            { status: 400 }
+          );
+        }
+
+        if (!msg.role || !VALID_ROLES.includes(msg.role)) {
+          return NextResponse.json(
+            { error: 'Invalid role in conversation history. Must be user, assistant, or system' },
+            { status: 400 }
+          );
+        }
+
+        if (!msg.content || typeof msg.content !== 'string') {
+          return NextResponse.json(
+            { error: 'Invalid content in conversation history' },
+            { status: 400 }
+          );
+        }
+
+        if (msg.content.length > MAX_MESSAGE_LENGTH) {
+          return NextResponse.json(
+            { error: 'Message in conversation history is too long' },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     const messages = [
       {
         role: 'system',
@@ -55,7 +115,7 @@ export async function POST(request: NextRequest) {
         You have access to a recipe search tool. Use it when users ask for specific recipes or recommendations.
         Be friendly, concise, and focus on African recipes. Use simple language.`
       },
-      ...conversationHistory,
+      ...(conversationHistory || []),
       { role: 'user', content: message }
     ];
 
