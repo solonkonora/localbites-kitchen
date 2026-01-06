@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Bot, User, Loader2, LogIn } from "lucide-react";
+import { X, Send, Bot, User, Loader2, LogIn } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 
@@ -62,11 +62,15 @@ export default function FloatingChatbot() {
     setIsLoading(true);
 
     try {
+      // Get auth token from localStorage, The backend will now be able to identify which user is making the request for any user-specific functionality like tracking chat history or rate limiting per user.
+      const token = localStorage.getItem("authToken");
+      
       // API call to the AI backend
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
         },
         body: JSON.stringify({
           message: userMessage.content,
@@ -127,7 +131,7 @@ export default function FloatingChatbot() {
           {/* Ripple effect rings */}
           <div className="absolute inset-0 -m-2">
             <span className="absolute inset-0 rounded-full bg-orange-500 opacity-75 animate-ping"></span>
-            <span className="absolute inset-0 rounded-full bg-orange-500 opacity-50 animate-ping" style={{ animationDelay: '0.5s' }}></span>
+            <span className="absolute inset-0 rounded-full bg-orange-500 opacity-50 animate-ping" style={{ animationDelay: "0.5s" }}></span>
           </div>
           
           <button

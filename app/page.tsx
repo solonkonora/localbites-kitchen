@@ -84,17 +84,14 @@ export default function Home() {
 
               {/* Description */}
               <p className="text-lg sm:text-xl leading-relaxed max-w-lg mx-auto lg:mx-0 text-gray-100 lg:text-gray-800 font-light">
-                Discover authentic family recipes passed down through generations. 
-                <span className="block mt-2 font-medium text-white lg:text-gray-800">
-                  From comfort classics to cultural treasures.
-                </span>
+                Discover authentic family recipes passed down through generations. From comfort classics to cultural treasures.
               </p>
 
               {/* CTA Section */}
-              <div className="flex flex-col items-center lg:items-start gap-6 pt-6">
+              <div className="flex flex-col items-center lg:items-start gap-6 pt-4">
                 <button
                   onClick={handleGetStarted}
-                  className="group relative flex items-center gap-3 rounded-full bg-orange-600 px-10 py-4 text-lg font-bold text-white transition-all hover:shadow-2xl hover:scale-105 hover:from-orange-600 hover:to-red-700"
+                  className="group relative flex items-center gap-3 rounded-full bg-orange-600 px-10 py-4 text-lg font-bold text-white transition-all hover:shadow-2xl hover:scale-105"
                 >
                   <span>Get Started</span>
                   <svg

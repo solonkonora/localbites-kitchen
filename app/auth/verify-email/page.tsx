@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/apiClient';
 
-// Force dynamic rendering to prevent prerendering issues
+// Force dynamic rendering to prevent prerendering issues because this page depends on the per-request `token` query param
 export const dynamic = 'force-dynamic';
 
 export default function VerifyEmailPage() {

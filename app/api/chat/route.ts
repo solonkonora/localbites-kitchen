@@ -16,6 +16,66 @@ const MAX_MESSAGE_LENGTH = 2000;
 const MAX_CONVERSATION_HISTORY = 20;
 const VALID_ROLES = ['user', 'assistant', 'system'] as const;
 
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute in milliseconds
+const MAX_REQUESTS_PER_WINDOW = 10; // 10 requests per minute
+
+// In-memory store for rate limiting
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+// Clean up old entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, value] of rateLimitStore.entries()) {
+    if (now > value.resetTime) {
+      rateLimitStore.delete(key);
+    }
+  }
+}, 5 * 60 * 1000);
+
+// Rate limiting function
+function checkRateLimit(identifier: string): { allowed: boolean; resetTime?: number } {
+  const now = Date.now();
+  const record = rateLimitStore.get(identifier);
+
+  if (!record || now > record.resetTime) {
+    // First request or window expired
+    rateLimitStore.set(identifier, {
+      count: 1,
+      resetTime: now + RATE_LIMIT_WINDOW,
+    });
+    return { allowed: true };
+  }
+
+  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+    // Rate limit exceeded
+    return { allowed: false, resetTime: record.resetTime };
+  }
+
+  // Increment count
+  record.count++;
+  return { allowed: true };
+}
+
+// Get client IP address
+function getClientIP(request: NextRequest): string {
+  // Try various headers that might contain the real IP
+  const forwarded = request.headers.get('x-forwarded-for');
+  const realIP = request.headers.get('x-real-ip');
+  const cfConnectingIP = request.headers.get('cf-connecting-ip');
+  
+  if (forwarded) {
+    // x-forwarded-for can contain multiple IPs, take the first one
+    return forwarded.split(',')[0].trim();
+  }
+  
+  if (realIP) return realIP;
+  if (cfConnectingIP) return cfConnectingIP;
+  
+  // Fallback to a default if no IP found (shouldn't happen in production)
+  return 'unknown';
+}
+
 // Function to search recipes
 async function searchRecipes(query: string) {
   try {
@@ -42,6 +102,31 @@ async function searchRecipes(query: string) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting check
+    const clientIP = getClientIP(request);
+    const rateLimitCheck = checkRateLimit(clientIP);
+    
+    if (!rateLimitCheck.allowed) {
+      const resetTime = rateLimitCheck.resetTime || Date.now();
+      const secondsUntilReset = Math.ceil((resetTime - Date.now()) / 1000);
+      
+      return NextResponse.json(
+        { 
+          error: 'Too many requests. Please try again later.',
+          retryAfter: secondsUntilReset 
+        },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': secondsUntilReset.toString(),
+            'X-RateLimit-Limit': MAX_REQUESTS_PER_WINDOW.toString(),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': new Date(resetTime).toISOString(),
+          }
+        }
+      );
+    }
+
     const { message, conversationHistory } = await request.json();
 
     // Validate message
