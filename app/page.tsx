@@ -36,9 +36,9 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen overflow-x-hidden">
       {/* Hero Section */}
-      <section className="min-h-screen flex items-stretch relative">
+      <section className="min-h-screen flex items-stretch relative overflow-hidden">
         {/* Background Image for Mobile/Tablet, hidden on Desktop */}
         <div className="absolute inset-0 lg:hidden">
           <Image
@@ -67,31 +67,35 @@ export default function Home() {
           </div>
           
           {/* Text right side */}
-          <div className="w-full lg:w-1/2 flex items-center justify-center px-4 py-12 min-h-screen lg:bg-gradient-to-br lg:from-orange-50 lg:via-white lg:to-yellow-50">
-            <div className="max-w-2xl space-y-6 text-center lg:text-left">
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-white lg:text-gray-900">
-                Traditional Recipes,
-                <br />
-                <span className="text-orange-400 lg:text-orange-600">Modern Kitchen</span>
-              </h1>
+          <div className="w-full lg:w-1/2 flex items-center justify-center px-6 sm:px-8 md:px-12 lg:px-16 py-12 min-h-screen lg:bg-gradient-to-br lg:from-orange-50 lg:via-white lg:to-yellow-50">
+            <div className="max-w-xl space-y-8 text-center lg:text-left">
+              {/* Main Heading */}
+              <div className="space-y-4">
+                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.1] text-white lg:text-gray-900 tracking-tight">
+                  Traditional Recipes,
+                  <br />
+                  <span className="bg-orange-600 bg-clip-text text-transparent lg:from-orange-600 lg:to-red-700">
+                    Modern Kitchen
+                  </span>
+                </h1>
 
-              <p className="text-lg sm:text-xl md:text-2xl max-w-2xl mx-auto lg:mx-0 text-white lg:text-gray-700">
-                Discover authentic family recipes passed down through
-                generations. From comfort classics to cultural treasures.
+                <div className="w-20 h-1 bg-orange-600 mx-auto lg:mx-0 rounded-full"></div>
+              </div>
+
+              {/* Description */}
+              <p className="text-lg sm:text-xl leading-relaxed max-w-lg mx-auto lg:mx-0 text-gray-100 lg:text-gray-800 font-light">
+                Discover authentic family recipes passed down through generations. From comfort classics to cultural treasures.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
-                <p className="text-lg font-medium text-white lg:text-gray-700">
-                  Want to explore!
-                </p>
-
+              {/* CTA Section */}
+              <div className="flex flex-col items-center lg:items-start gap-6 pt-4">
                 <button
                   onClick={handleGetStarted}
-                  className="group flex items-center gap-2 rounded-full bg-orange-500 px-8 py-3 text-lg font-semibold text-white transition-all hover:bg-orange-600 hover:shadow-lg hover:scale-105"
+                  className="group relative flex items-center gap-3 rounded-full bg-orange-600 px-10 py-4 text-lg font-bold text-white transition-all hover:shadow-2xl hover:scale-105"
                 >
-                  Get Started
+                  <span>Get Started</span>
                   <svg
-                    className="w-5 h-5 transition-transform group-hover:translate-x-1"
+                    className="w-5 h-5 transition-transform group-hover:translate-x-2"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -99,33 +103,15 @@ export default function Home() {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth={2}
+                      strokeWidth={2.5}
                       d="M13 7l5 5m0 0l-5 5m5-5H6"
                     />
                   </svg>
                 </button>
-              </div>
 
-              {/* Stats or Features */}
-              <div className="grid grid-cols-3 gap-4 pt-8">
-                <div className="text-center lg:text-left">
-                  <p className="text-2xl sm:text-3xl font-bold text-orange-400 lg:text-orange-600">
-                    100+
-                  </p>
-                  <p className="text-sm text-white lg:text-gray-600">Recipes</p>
-                </div>
-                <div className="text-center lg:text-left">
-                  <p className="text-2xl sm:text-3xl font-bold text-orange-400 lg:text-orange-600">
-                    5+
-                  </p>
-                  <p className="text-sm text-white lg:text-gray-600">Categories</p>
-                </div>
-                <div className="text-center lg:text-left">
-                  <p className="text-2xl sm:text-3xl font-bold text-orange-400 lg:text-orange-600">
-                    10k+
-                  </p>
-                  <p className="text-sm text-white lg:text-gray-600">Food Lovers</p>
-                </div>
+                <p className="text-base text-gray-200 lg:text-gray-500">
+                  Join thousands exploring delicious recipes
+                </p>
               </div>
             </div>
           </div>

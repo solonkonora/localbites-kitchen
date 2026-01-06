@@ -1,5 +1,3 @@
-// Core type definitions for LocalBite
-
 export interface User {
   id: number;
   email: string;

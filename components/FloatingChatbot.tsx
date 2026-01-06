@@ -1,0 +1,313 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { X, Send, Bot, User, Loader2, LogIn } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import Link from "next/link";
+
+interface Message {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+}
+
+export default function FloatingChatbot() {
+  const { user } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "welcome",
+      role: "assistant",
+      content: "Hello! I'm your LocalBite AI assistant. I can help you discover recipes, answer cooking questions, and provide ingredient substitutions. How can I help you today?",
+      timestamp: new Date(),
+    },
+  ]);
+  const [inputMessage, setInputMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-scroll to bottom when new messages arrive
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Focus input when chat opens
+  useEffect(() => {
+    if (isOpen) {
+      inputRef.current?.focus();
+    }
+  }, [isOpen]);
+
+  const handleSendMessage = async () => {
+    if (!user) {
+      return; // Should not happen as input is disabled for non-authenticated users
+    }
+    if (!inputMessage.trim() || isLoading) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: inputMessage.trim(),
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInputMessage("");
+    setIsLoading(true);
+
+    try {
+      // Get auth token from localStorage, The backend will now be able to identify which user is making the request for any user-specific functionality like tracking chat history or rate limiting per user.
+      const token = localStorage.getItem("authToken");
+      
+      // API call to the AI backend
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({
+          message: userMessage.content,
+          conversationHistory: messages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to get response");
+      }
+
+      const data = await response.json();
+
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: data.message || "I'm sorry, I couldn't process that request.",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error("Chat error:", error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "Sorry, I'm having trouble connecting right now. Please try again later.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  return (
+    <>
+      {/* Floating Chat Button */}
+      {!isOpen && (
+        <div className="fixed bottom-6 right-6 z-50">
+          {/* Ripple effect rings */}
+          <div className="absolute inset-0 -m-2">
+            <span className="absolute inset-0 rounded-full bg-orange-500 opacity-75 animate-ping"></span>
+            <span className="absolute inset-0 rounded-full bg-orange-500 opacity-50 animate-ping" style={{ animationDelay: "0.5s" }}></span>
+          </div>
+          
+          <button
+            onClick={() => setIsOpen(true)}
+            className="relative bg-orange-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 animate-bounce group"
+            aria-label="Open chat"
+          >
+            <Bot className="w-6 h-6 animate-pulse" />
+            {/* Notification badge with stronger pulse */}
+            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-green-500 border-2 border-white"></span>
+            </span>
+          </button>
+        </div>
+      )}
+
+      {/* Chat Window */}
+      {isOpen && (
+        <div className="fixed bottom-6 right-6 z-50 w-[400px] h-[600px] max-w-[calc(100vw-3rem)] max-h-[calc(100vh-3rem)] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200">
+          {/* Chat Header */}
+          <div className="bg-orange-600 text-white p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                <Bot className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">LocalBite AI</h3>
+                <p className="text-xs text-white/80">Always here to help</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="p-2 hover:bg-white/20 rounded-full transition-colors"
+              aria-label="Close chat"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Messages Container */}
+          {!user ? (
+            // Show signup prompt for non-authenticated users
+            <div className="flex-1 flex items-center justify-center p-6 bg-gray-50">
+              <div className="text-center max-w-sm">
+                <div className="w-20 h-20 mx-auto mb-4 bg-orange-600 rounded-full flex items-center justify-center">
+                  <LogIn className="w-10 h-10 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  Sign in to Chat
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Join LocalBite to unlock AI-powered recipe assistance, personalized recommendations, and cooking tips.
+                </p>
+                <Link
+                  href="/login"
+                  className="inline-block px-6 py-3 bg-orange-600 text-white font-medium rounded-full hover:shadow-lg transition-all duration-300 hover:scale-105"
+                >
+                  Sign In / Sign Up
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex gap-3 ${
+                  message.role === "user" ? "flex-row-reverse" : "flex-row"
+                }`}
+              >
+                {/* Avatar */}
+                <div
+                  className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                    message.role === "user"
+                      ? "bg-orange-600"
+                      : "bg-gradient-to-r from-blue-500 to-purple-600"
+                  }`}
+                >
+                  {message.role === "user" ? (
+                    <User className="w-4 h-4 text-white" />
+                  ) : (
+                    <Bot className="w-4 h-4 text-white" />
+                  )}
+                </div>
+
+                {/* Message Bubble */}
+                <div
+                  className={`flex-1 max-w-[75%] ${
+                    message.role === "user" ? "items-end" : "items-start"
+                  } flex flex-col gap-1`}
+                >
+                  <div
+                    className={`rounded-2xl px-4 py-2 ${
+                      message.role === "user"
+                        ? "bg-orange-600 text-white rounded-br-none"
+                        : "bg-white text-gray-800 shadow-sm border border-gray-200 rounded-bl-none"
+                    }`}
+                  >
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                      {message.content}
+                    </p>
+                  </div>
+                  <span className="text-xs text-gray-500 px-2">
+                    {formatTime(message.timestamp)}
+                  </span>
+                </div>
+              </div>
+            ))}
+
+            {/* Loading indicator */}
+            {isLoading && (
+              <div className="flex gap-3">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600">
+                  <Bot className="w-4 h-4 text-white" />
+                </div>
+                <div className="bg-white text-gray-800 shadow-sm border border-gray-200 rounded-2xl rounded-bl-none px-4 py-3 flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
+                  <span className="text-sm text-gray-600">Thinking...</span>
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+          )}
+
+          {/* Input Area - Only show for authenticated users */}
+          {user && (
+          <div className="p-4 bg-white border-t border-gray-200">
+            <div className="flex gap-2">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Ask me anything about recipes..."
+                disabled={isLoading}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={!inputMessage.trim() || isLoading}
+                className="p-2 bg-orange-600 text-white rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+                aria-label="Send message"
+              >
+                <Send className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                onClick={() => setInputMessage("What recipes can I make with chicken?")}
+                className="px-3 py-1 text-xs bg-orange-100 text-orange-700 rounded-full hover:bg-orange-200 transition-colors"
+              >
+                Recipe suggestions
+              </button>
+              <button
+                onClick={() => setInputMessage("Can you suggest a substitute for eggs?")}
+                className="px-3 py-1 text-xs bg-orange-100 text-orange-700 rounded-full hover:bg-orange-200 transition-colors"
+              >
+                Ingredient substitutes
+              </button>
+              <button
+                onClick={() => setInputMessage("How do I make Jollof Rice?")}
+                className="px-3 py-1 text-xs bg-orange-100 text-orange-700 rounded-full hover:bg-orange-200 transition-colors"
+              >
+                Cooking help
+              </button>
+            </div>
+          </div>
+          )}
+        </div>
+      )}
+    </>
+  );
+}

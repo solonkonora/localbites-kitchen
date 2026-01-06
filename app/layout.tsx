@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppContextProvider } from "@/contexts/AppContext";
 import { QueryProvider } from "@/components/QueryProvider";
+import FloatingChatbot from "@/components/FloatingChatbot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,6 +39,7 @@ export default function RootLayout({
           <AuthProvider>
             <AppContextProvider>
               {children}
+              <FloatingChatbot />
             </AppContextProvider>
           </AuthProvider>
         </QueryProvider>

@@ -703,7 +703,7 @@ export default function EditRecipePage() {
             <button
               type="submit"
               disabled={isSaving}
-              className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {uploadImageMutation.isPending
                 ? "Uploading image..."

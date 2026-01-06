@@ -57,7 +57,7 @@ export default function Categories({ onCategoryClick }: CategoriesProps) {
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-gray-900 tracking-tight">
-            Recipe <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">Categories</span>
+            Recipe <span className="text-transparent bg-clip-text bg-orange-600">Categories</span>
           </h2>
           <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
             Explore our collection of recipes organized by meal type.

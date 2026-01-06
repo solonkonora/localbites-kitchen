@@ -154,19 +154,6 @@ export async function getCurrentUser(): Promise<{ user: User }> {
   return request<{ user: User }>('/auth/me', { method: 'GET' });
 }
 
-export async function requestMagicLink(email: string): Promise<{ message: string; isNewUser: boolean }> {
-  return request<{ message: string; isNewUser: boolean }>('/auth/request-magic-link', { 
-    method: 'POST', 
-    body: { email } 
-  });
-}
-
-export async function verifyMagicLink(token: string): Promise<AuthResponse & { isNewUser: boolean }> {
-  return request<AuthResponse & { isNewUser: boolean }>('/auth/verify-magic-link', { 
-    method: 'POST', 
-    body: { token } 
-  });
-}
 
 export async function verifyEmail(token: string): Promise<AuthResponse> {
   return request<AuthResponse>('/auth/verify-email', { 
@@ -268,8 +255,6 @@ const api = {
   login,
   logout,
   getCurrentUser,
-  requestMagicLink,
-  verifyMagicLink,
   verifyEmail,
   resendVerification,
   getFavorites,

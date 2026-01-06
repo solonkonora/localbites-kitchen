@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import api from '@/lib/apiClient';
+
+// Force dynamic rendering to prevent prerendering issues because this page depends on the per-request `token` query param
+export const dynamic = 'force-dynamic';
 
 export default function VerifyEmailPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [status, setStatus] = useState<'verifying' | 'success' | 'error' | 'already-verified'>('verifying');
   const [errorMessage, setErrorMessage] = useState('');
   const [email, setEmail] = useState('');
@@ -14,7 +16,11 @@ export default function VerifyEmailPage() {
   const [resendMessage, setResendMessage] = useState('');
 
   useEffect(() => {
-    const token = searchParams.get('token');
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
 
     const verify = async () => {
       if (!token) {
@@ -25,27 +31,27 @@ export default function VerifyEmailPage() {
 
       try {
         const data = await api.verifyEmail(token);
-        
+
         // Store token for authenticated requests
         if (data.token) {
           localStorage.setItem('authToken', data.token);
         }
-        
+
         setStatus('success');
-        
+
         // Redirect to dashboard after 2 seconds
         setTimeout(() => {
           router.push('/dashboard');
         }, 2000);
       } catch (error: unknown) {
         const err = error as { response?: { error?: string; alreadyVerified?: boolean; expired?: boolean; email?: string } };
-        
+
         if (err.response?.alreadyVerified) {
           setStatus('already-verified');
         } else {
           setStatus('error');
           setErrorMessage(
-            err.response?.error || 
+            err.response?.error ||
             'Failed to verify email. The link may have expired or is invalid.'
           );
           if (err.response?.email) {
@@ -56,14 +62,14 @@ export default function VerifyEmailPage() {
     };
 
     verify();
-  }, [searchParams, router]);
+  }, [router]);
 
   const handleResendVerification = async () => {
     if (!email) return;
-    
+
     setResendLoading(true);
     setResendMessage('');
-    
+
     try {
       const data = await api.resendVerification(email);
       setResendMessage(data.message);
@@ -93,7 +99,7 @@ export default function VerifyEmailPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Email Verified! 🎉</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Email Verified!</h2>
             <p className="text-gray-600 mb-4">Your account has been successfully verified</p>
             <p className="text-sm text-gray-500">Redirecting to your dashboard...</p>
           </div>
@@ -126,7 +132,7 @@ export default function VerifyEmailPage() {
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Verification Failed</h2>
             <p className="text-gray-600 mb-6">{errorMessage}</p>
-            
+
             {email && (
               <div className="mb-6">
                 <p className="text-sm text-gray-600 mb-3">Need a new verification link?</p>
@@ -142,7 +148,7 @@ export default function VerifyEmailPage() {
                 )}
               </div>
             )}
-            
+
             <button
               onClick={() => router.push('/login')}
               className="text-orange-600 hover:text-orange-700 font-medium"
