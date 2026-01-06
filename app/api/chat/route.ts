@@ -19,6 +19,11 @@ const VALID_ROLES = ['user', 'assistant', 'system'] as const;
 // Function to search recipes
 async function searchRecipes(query: string) {
   try {
+    if (!process.env.NEXT_PUBLIC_API_BASE_URL) {
+      console.error('NEXT_PUBLIC_API_BASE_URL is not configured');
+      return [];
+    }
+
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/search/semantic`, {
       method: 'POST',
       headers: {
