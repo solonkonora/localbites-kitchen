@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, Suspense } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,7 +8,6 @@ import { useAppContext } from '@/contexts/AppContext';
 import Footer from '@/components/footer';
 import FeaturedRecipes from '@/components/featuredRecipes';
 import Categories from '@/components/categories';
-import OAuthCallback from '@/components/OAuthCallback';
 
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
@@ -38,11 +37,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen overflow-x-hidden">
-      {/* Handle OAuth callback */}
-      <Suspense fallback={null}>
-        <OAuthCallback />
-      </Suspense>
-
       {/* Hero Section */}
       <section className="min-h-screen flex items-stretch relative overflow-hidden">
         {/* Background Image for Mobile/Tablet, hidden on Desktop */}
