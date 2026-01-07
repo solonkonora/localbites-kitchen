@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppContext } from '@/contexts/AppContext';
@@ -13,6 +13,24 @@ export default function Home() {
   const { user, loading: authLoading } = useAuth();
   const { fetchRecipes } = useAppContext();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // Handle OAuth callback - extract token from URL
+    const authStatus = searchParams.get('auth');
+    const token = searchParams.get('token');
+
+    if (authStatus === 'success' && token) {
+      // Store token in localStorage
+      localStorage.setItem('token', token);
+      
+      // Remove token from URL for security
+      window.history.replaceState({}, '', '/');
+      
+      // Reload to trigger auth context to fetch user
+      window.location.reload();
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     // Fetch recipes for all users
