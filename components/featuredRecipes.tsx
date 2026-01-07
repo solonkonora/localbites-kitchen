@@ -45,7 +45,7 @@ export default function FeaturedRecipes() {
     {
       id: 3,
       title: 'Achu Soup',
-      image: 'https://res.cloudinary.com/drs0ewxd1/image/upload/v1/cameroon-recipes/lunch/achu.jpg',
+      image: 'https://res.cloudinary.com/drs0ewxd1/image/upload/v1/cameroon-recipes/dinner/okra-soup.png',
       // prep_time: 90,
       category: 'Dinner'
     }
